@@ -1,0 +1,6 @@
+.DS_Store
+.log
+.next
+coverage
+node_modules
+tempCodeRunnerFile.js

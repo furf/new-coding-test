@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: models/Order.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: models/Order.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const Base = require('./Base');
+const Driver = require('./Driver');
+const Ticket = require('./Ticket');
+const { now } = require('../lib/time');
+
+/**
+ * Order
+ * @class
+ * @extends Base
+ */
+class Order extends Base {
+  /**
+   * @constructor
+   * @param {Object} config
+   * @param {string} config.name Name of dish
+   * @param {string} config.temp /hot|cold|frozen/ temperature of order, used
+   *        to determine shelf placement
+   * @param {number} config.shelfLife Health of dish
+   * @param {number} config.decayRate Rate of decay to apply each second
+   */
+  constructor({ name, temp, shelfLife, decayRate }) {
+    super();
+    this.name = name;
+    this.temp = temp;
+    this.shelfLife = shelfLife;
+    this.decayRate = decayRate;
+    this.driver = new Driver();
+    this.tickets_ = [];
+    this.shelf = null;
+    this.createdAt = now();
+  }
+
+  /**
+   * Overwrite toJSON method to remove circular dependencies.
+   */
+  toJSON() {
+    return Object.assign(super.toJSON(), {
+      shelf: undefined,
+      tickets_: undefined,
+    });
+  }
+
+  set shelf(shelf) {
+    // Only add a ticket if the order has moved.
+    if (!shelf || shelf === this.shelf) return;
+    this.tickets_.push(new Ticket({ shelf }));
+  }
+
+  get shelf() {
+    if (!this.tickets_.length) return null;
+    // The current shelf can be found in the last ticket.
+    return this.tickets_[this.tickets_.length - 1].shelf;
+  }
+
+  set shelfLife(shelfLife) {
+    this.shelfLife_ = shelfLife;
+  }
+
+  getShelfLife_(time) {
+    // Compute the order's current shelf life by iterating through its history
+    // and reducing the accumulated shelf life by the decay incurred on each
+    // shelf.
+    const remainingShelfLife = this.tickets_.reduce(
+      (shelfLife, ticket, index, tickets) => {
+        // Calculate ticket age by comparing its timestamp to the next ticket.
+        const next = tickets[index + 1];
+        const endedAt = next ? next.createdAt : time;
+        const age = endedAt - ticket.createdAt;
+
+        // Decay rate is the product of the order's decay rate and the shelf's
+        // decay factor.
+        const decayRate = this.decayRate * ticket.shelf.decayFactor;
+
+        // Decay and remaining shelf life are derived using the following
+        // provided formula:
+        // value = (shelfLife - orderAge) - (decayRate * orderAge)
+        // Which can be simplified to:
+        // value = shelfLife - ((decayRate + 1) * orderAge)
+        const decay = (decayRate + 1) * age;
+        return shelfLife - decay;
+      },
+      this.shelfLife_,
+    );
+    return Math.max(0, remainingShelfLife);
+  }
+
+  get shelfLife() {
+    return this.getShelfLife_(now());
+  }
+
+  getHealth_(time) {
+    return this.getShelfLife_(time) / this.shelfLife_;
+  }
+
+  get health() {
+    return this.getHealth_(now());
+  }
+
+  get isExpired() {
+    return this.shelfLife &lt; 0;
+  }
+
+  get isDelivered() {
+    return !this.isExpired &amp;&amp; this.driver.hasArrived;
+  }
+
+  get priority() {
+    // Time-to-live is calculated without shelf decay factor to control for
+    // decay under optimal conditions. The lower this number, the closer this
+    // order is to expiration.
+    const timeToLive = this.shelfLife / (this.decayRate + 1);
+    // Driver margin is the difference between how long the food _will_ live and
+    // how long it _needs_ to live. The lower this number, the less margin for
+    // driver error the order can support.
+    const driverMargin = timeToLive - this.driver.timeToArrival;
+    // Multiplying these values returns a seemingly good indicator of an order's
+    // chance of success. The smaller the number, the more "at-risk" an order is
+    // and therefore the higher its priority should be.
+    const priority = timeToLive * driverMargin;
+    return priority;
+  }
+}
+
+module.exports = Order;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Base.html">Base</a></li><li><a href="ColdShelf.html">ColdShelf</a></li><li><a href="DeliveryWindow.html">DeliveryWindow</a></li><li><a href="Driver.html">Driver</a></li><li><a href="Expeditor.html">Expeditor</a></li><li><a href="FrozenShelf.html">FrozenShelf</a></li><li><a href="HotShelf.html">HotShelf</a></li><li><a href="Order.html">Order</a></li><li><a href="OverflowShelf.html">OverflowShelf</a></li><li><a href="Shelf.html">Shelf</a></li><li><a href="TempShelf.html">TempShelf</a></li><li><a href="Ticket.html">Ticket</a></li><li><a href="WasteBin.html">WasteBin</a></li></ul><h3>Global</h3><ul><li><a href="global.html#clamp">clamp</a></li><li><a href="global.html#factorial">factorial</a></li><li><a href="global.html#getCumulativeSums">getCumulativeSums</a></li><li><a href="global.html#getPoissonDistribution">getPoissonDistribution</a></li><li><a href="global.html#getPoissonRandomizer">getPoissonRandomizer</a></li><li><a href="global.html#getRandomizer">getRandomizer</a></li><li><a href="global.html#makeReverseProbability">makeReverseProbability</a></li><li><a href="global.html#now">now</a></li><li><a href="global.html#P">P</a></li><li><a href="global.html#random">random</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Mar 18 2019 11:37:08 GMT-0700 (Pacific Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

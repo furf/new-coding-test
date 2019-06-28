@@ -1,0 +1,19 @@
+mutation createOrder(
+  $name: String!
+  $temp: String!
+  $shelfLife: Int!
+  $decayRate: Float!
+) {
+  createOrder(
+    name: $name
+    temp: $temp
+    shelfLife: $shelfLife
+    decayRate: $decayRate
+  ) {
+    id
+    name
+    temp
+    shelfLife
+    decayRate
+  }
+}

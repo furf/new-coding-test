@@ -1,0 +1,112 @@
+subscription expeditorExpedited {
+  expeditorExpedited {
+    shelves {
+      hot {
+        capacity
+        orders {
+          id
+          name
+          temp
+          shelfLife
+          decayRate
+          driver {
+            driveTime
+            dispatchedAt
+            willArriveAt
+            timeToArrival
+          }
+          health
+          createdAt
+        }
+      }
+      cold {
+        capacity
+        orders {
+          id
+          name
+          temp
+          shelfLife
+          decayRate
+          driver {
+            driveTime
+            dispatchedAt
+            willArriveAt
+            timeToArrival
+          }
+          health
+          createdAt
+        }
+      }
+      frozen {
+        capacity
+        orders {
+          id
+          name
+          temp
+          shelfLife
+          decayRate
+          driver {
+            driveTime
+            dispatchedAt
+            willArriveAt
+            timeToArrival
+          }
+          health
+          createdAt
+        }
+      }
+      overflow {
+        capacity
+        orders {
+          id
+          name
+          temp
+          shelfLife
+          decayRate
+          driver {
+            driveTime
+            dispatchedAt
+            willArriveAt
+            timeToArrival
+          }
+          health
+          createdAt
+        }
+      }
+      waste {
+        orders {
+          id
+          name
+          temp
+          shelfLife
+          decayRate
+          driver {
+            driveTime
+            dispatchedAt
+            willArriveAt
+            timeToArrival
+          }
+          health
+          createdAt
+        }
+      }
+      delivery {
+        orders {
+          id
+          name
+          temp
+          shelfLife
+          decayRate
+          driver {
+            driveTime
+            dispatchedAt
+            willArriveAt
+            timeToArrival
+          }
+          health
+          createdAt
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "name": "new-coding-test",
+  "builds": [
+    { "src": "/graphql/index.js", "use": "@now/node-server" }
+    { "src": "/www/next.config.js", "use": "@now/next" }
+  ],
+  "routes": [
+    { "src": "/api/.*", "dest": "/graphql/index.js" }
+  ]
+}

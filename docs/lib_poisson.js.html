@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/poisson.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: lib/poisson.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * poisson
+ * This module contains functions relevant to creating the Poisson randomizer
+ * which generates a random number of events with accurate probability according
+ * to the specified mean (lambda).
+ */
+const { factorial } = require('./math');
+
+/**
+ * Create a Poisson probability calculator for a specified lambda.
+ * @param {number} lambda average number of events
+ * @returns {Function}
+ */
+function P(lambda) {
+  /**
+   * Determine the Poisson probability of exactly x events.
+   * @param {number} x
+   * @returns {number} Number from 0–1 representing probability of x events
+   */
+  return function p(x) {
+    // eslint-disable-next-line no-restricted-properties
+    return (Math.pow(lambda, x) * Math.pow(Math.E, -lambda)) / factorial(x);
+  };
+}
+
+/**
+ * Generate the distribution of Poisson probabilities for the most likely number
+ * of events. The range is calculated by iterating the Poisson probabilities
+ * from x = 0 to x = maximum non-zero probability. The maximum non-zero
+ * probability will occur to the right of the mean (x > lambda) when f crosses
+ * the x-axis (f &lt;= 0). These values will be used to create a Poisson event
+ * randomizer.
+ * @param {number} lambda
+ * @returns {Array&lt;number>} Range of probabilities from 0–n where n is the last
+ *          likely number of events
+ */
+function getPoissonDistribution(lambda) {
+  const p = P(lambda);
+  const distribution = [];
+  let x = 0;
+  let f = 0;
+
+  do {
+    f = p(x);
+
+    // eslint-disable-next-line no-restricted-globals
+    if (f === Infinity || isNaN(f)) {
+      break;
+    }
+
+    distribution.push(f);
+    x += 1;
+  } while (f > 0 || x &lt; lambda);
+  return distribution;
+}
+
+/**
+ * Map an array of numerical values to an array of cumulative sums. This array
+ * is used to create a random integer generator.
+ * @param {Array&lt;number>} values Array of numerical values
+ * @returns {Array&lt;number>} values Array of cumulative probabilities
+ */
+function getCumulativeSums(values) {
+  const sums = [];
+  let sum = 0;
+  for (let i = 0, n = values.length; i &lt; n; i += 1) {
+    sum += values[i];
+    sums.push(sum);
+  }
+  return sums;
+}
+
+/**
+ * Creates a function that, when passed a value berween 0 and 1, returns the
+ * lowest number in an array (sorted values from 0 to 1) that is greater than
+ * the number passed to it.
+ * @param {Array&lt;number>} values
+ * @returns {Function}
+ */
+function makeReverseProbability(values) {
+  return function getReverseProbability(n) {
+    if (n &lt; 0 || n >= 1) {
+      throw new RangeError('Value must be >= 0 and &lt; 1.');
+    }
+    let i = 0;
+    while (n > values[i]) {
+      i += 1;
+    }
+    return i;
+  };
+}
+
+/**
+ * Generate a random integer generator from 0–n where n is the length of the
+ * array of values.* The array should contain numerical thresholds from 0–1.
+ *
+ * For example, given an array of values [0.1, 0.4, 0.9], you would have a:
+ * * 10% chance of 0 (random number is between 0 and 0.1)
+ * * 30% chance of 1 (random number is between 0.1 and 0.4)
+ * * 50% chance of 2 (random number is between 0.4 and 0.9)
+ * * 10% chance of 3 (random number is between 0.9 and 1)
+ *
+ * *This function should be changed to normalize the values using the min
+ * and max of the range to represent 0 and 1. This function currently has the
+ * tiny flaw of returning n + 1 if the random number is greater than the highest
+ * value in the array, but for the purposes of this assignment it is fine. The
+ * Poisson distribution function returns max values that are 1 or are relatively
+ * indescernible.
+ * @param {Array&lt;number>} values Array of numerical values from 0–1
+ * @returns {Function} random number generator
+ */
+function getRandomizer(values) {
+  const getReverseProbability = makeReverseProbability(values);
+  return function randomizer() {
+    const n = Math.random();
+    return getReverseProbability(n);
+  };
+}
+
+/**
+ * Generate a random number generator that returns a number of events based
+ * on its probability for a given lambda
+ * @param {number} lambda average number of events
+ * @returns {Function} random number generator
+ */
+function getPoissonRandomizer(lambda) {
+  const distribution = getPoissonDistribution(lambda);
+  const probabilities = getCumulativeSums(distribution);
+  const randomizer = getRandomizer(probabilities);
+  return randomizer;
+}
+
+module.exports = {
+  P,
+  getPoissonDistribution,
+  getCumulativeSums,
+  makeReverseProbability,
+  getRandomizer,
+  getPoissonRandomizer,
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Base.html">Base</a></li><li><a href="ColdShelf.html">ColdShelf</a></li><li><a href="DeliveryWindow.html">DeliveryWindow</a></li><li><a href="Driver.html">Driver</a></li><li><a href="Expeditor.html">Expeditor</a></li><li><a href="FrozenShelf.html">FrozenShelf</a></li><li><a href="HotShelf.html">HotShelf</a></li><li><a href="Order.html">Order</a></li><li><a href="OverflowShelf.html">OverflowShelf</a></li><li><a href="Shelf.html">Shelf</a></li><li><a href="TempShelf.html">TempShelf</a></li><li><a href="Ticket.html">Ticket</a></li><li><a href="WasteBin.html">WasteBin</a></li></ul><h3>Global</h3><ul><li><a href="global.html#clamp">clamp</a></li><li><a href="global.html#factorial">factorial</a></li><li><a href="global.html#getCumulativeSums">getCumulativeSums</a></li><li><a href="global.html#getPoissonDistribution">getPoissonDistribution</a></li><li><a href="global.html#getPoissonRandomizer">getPoissonRandomizer</a></li><li><a href="global.html#getRandomizer">getRandomizer</a></li><li><a href="global.html#makeReverseProbability">makeReverseProbability</a></li><li><a href="global.html#now">now</a></li><li><a href="global.html#P">P</a></li><li><a href="global.html#random">random</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Mar 18 2019 11:37:08 GMT-0700 (Pacific Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

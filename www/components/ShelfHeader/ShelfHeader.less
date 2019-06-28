@@ -1,0 +1,37 @@
+.ShelfHeader {
+  border-radius: 0.4em;
+  background: darkgray;
+  .Expeditor__incoming & {
+    background: darkcyan;
+  }
+  .Expeditor__hot & {
+    background: darkcyan;
+  }
+  .Expeditor__cold & {
+    background: darkcyan;
+  }
+  .Expeditor__frozen & {
+    background: darkcyan;
+  }
+  .Expeditor__overflow & {
+    background: darkslategray;
+  }
+  .Expeditor__delivery & {
+    background: darkcyan;
+  }
+  .Expeditor__waste & {
+    background: darkslategray;
+  }
+
+  h2 {
+    margin: 0;
+    padding: 0.375rem calc(3px + 0.375rem);
+    font-size: 1.2em;
+    color: white;
+    flex: 0 0 0%;
+    small {
+      font-weight: normal;
+      float: right;
+    }
+  }
+}

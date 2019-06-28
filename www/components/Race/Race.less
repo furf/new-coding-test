@@ -1,0 +1,47 @@
+.Race {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 0.75em;
+  background: #eee;
+}
+
+.Race__track {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: calc(100% - 1.5em);
+  height: 0.75em;
+  border-right: 1px solid #f6f6f6;
+}
+
+.Race__stripes {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 0.4375em;
+  border-top: 1px dashed gold;
+}
+
+.Race__racer {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  transition: transform 250ms linear;
+}
+
+.Race__driver {
+  bottom: 0.125em;
+}
+
+.Race__death {
+  bottom: -0.125em;
+}
+
+.Race__flag {
+  position: absolute;
+  left: 0.625em;
+  bottom: 0.125em;
+}
